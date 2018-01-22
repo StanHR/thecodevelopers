@@ -10,10 +10,16 @@ else
 {
 	
 	include("db_conn.php");
+	if(!$conn)
+	{
+		$result = 500;
+  		header("Location: result.php?res=$result");
+	}
+
 	$roll_no = $_SESSION['rn'];
 	$user_name = $_SESSION['uname'];	
 	$user_email = $_SESSION['eid'];
-
+}
 
 ?>
 <!DOCTYPE html>
@@ -29,26 +35,10 @@ else
 <body>
 	
 <div> <!--for displaying the rating from other user-->
-		<h1>Other ppl rating</h1>
-		<?php
-		$query="select * from feedback ORDER BY feed_id desc";
-		$fetch_feedback = mysqli_query($conn,$query);
-		if(!$fetch_feedback){
-			die("query failed ".mysqli_error($conn));
-				
-		}
-		else{
-				while($row = mysqli_fetch_assoc($fetch_feedback)){
-				$roll_no = $row['rn'];
-				$user_name = $row['uname'];
-				$email = $row['eid'];
-				$feed_rating = $row['feed_rating'];
-				$feed_msg = $row['feed_msg'];
-					
-					?>
-				<br><br>	
+		<!-- <h1>Other ppl rating</h1>
+			<br><br>	
 			<label class="" for="rollno">Rollno:</label>
-			<span id="rollno" name="rollno" > <?php echo $roll_no; ?> </span><br>
+			<span id="rollno" name="rollno"> <?php echo $roll_no; ?> </span><br>
 
 			<label class="" for="user_name">Name:</label>
 			<span class="" id="user_name"  name="user_name" ><?php echo $user_name; ?></span><br>
@@ -63,24 +53,41 @@ else
 			<span class="" name="rating" id="rating"  ><?php echo $feed_rating; ?></span><br>
 			
 				<div class="stars">
-		<?php for($i=0;$i<$feed_rating;$i++){
-		
-		
-			
-				echo "<span><i class='fa fa-star'></i></span>";
-   				
+		<?php 
+
+			$query="select * from feedback ORDER BY feed_id desc";
+			$fetch_feedback = mysqli_query($conn,$query);
+			if(!$fetch_feedback)
+			{
+				$result = 500;
+  				header("Location: result.php?res=$result");				
+			}
+			else
+			{
+				while($row = mysqli_fetch_assoc($fetch_feedback))
+				{
+					$feed_rating = $row['feed_rating'];
+					$feed_msg = $row['feed_msg'];
+
+					for($i=0;$i<$feed_rating;$i++)
+					{
+						echo "<span><i class='fa fa-star'></i></span>";   				
 					}
-   				 ?>
+				}
+
+			}
+   			
+   		?>
 		
 				<br><br>
-			</div>
+			</div> -->
 					
-		<?php }}}?>
 	</div>
 
+	
 	<div>
 	<h4>To make this Website better we need our feedback</h4>
-	<form action="" method="post" role="form">
+	<form action="#" method="post" role="form">
    
      <label class="" for="rollno">Rollno:</label>
 	<input class="" id="rollno" disabled value="<?php echo $roll_no; ?>" type="text" name="rollno"/><br>
@@ -92,7 +99,7 @@ else
 	<input class="" id="user_email"  disabled value="<?php echo $user_email; ?>"  type="text" name="user_email" /><br>
 	 
 	 <label class="" for="messgae">Message:</label>
-	 <textarea class="" name="message" id="messgae" rows="5" for="messgae"></textarea><br>
+	 <textarea class="" name="message" id="messgae" rows="5" for="messgae" required="true"></textarea><br>
     
     <div class="stars">
     <input class="star star-5" id="star-5" type="radio" value="5" name="star"/>
@@ -112,18 +119,21 @@ else
  </div>
  <?php 
 	if(isset($_POST['create_feeedback'])){
+		print_r($_POST);
 		$feed_msg = $_POST['message'];
 		$feed_star = $_POST['star'];
 				$feed_star =mysqli_real_escape_string($conn,$_POST['star']);
-
-		if(empty($feed_msg)){
-			echo "Canot leave msg empty";
-			die("cannot leave msg emplty");
-		}
-		$query = "insert into feedback(roll_no,rating,feedback_text) values ('$roll_no','$feed_star','$feed_msg')";
+		$query = "insert into feedback(email, rating, feeback_text) values ('$user_email','$feed_star','$feed_msg')";
 		$feed_query =  mysqli_query($conn,$query);
 		if(!$feed_query){
-			die("query failed ".mysqli_error($conn));
+			$result = 500;
+  			//header("Location: result.php?res=$result");
+		}
+		else
+		{
+			$result = 200;
+			$com = "preq submission successful";
+		    //header("Location: result.php?res=$result&com=$com"); 
 		}
 	}
 
